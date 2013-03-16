@@ -1,12 +1,15 @@
 from fabric.api import *
 from fabric.contrib.project import upload_project
 from fabtools import require
+from fabtools.files import is_dir
+from fabtools.require import nginx, deb, python, files
+from fabric.contrib.console import confirm
 import fabtools
 import os
 
 env.hosts = ['vagrant@localhost:2222']
 env.passwords = {'vagrant@localhost:2222': 'vagrant'}
-remote_dir = '/home/vagrant/project/'
+remote_dir = '/home/vagrant/project2/'
 
 
 def  _deb_install_deps():
@@ -22,8 +25,14 @@ def  _deb_install_deps():
 
 
 def  _upload():
+     # proj dir create
+    if is_dir(remote_dir) and confirm("proj dir exist! abort ?", default=False):
+        return
+
+    files.directory(remote_dir, use_sudo=True, owner=env.user, group=env.user, mode='755')
+
     upload_project(
-        local_dir=os.getcwd(),
+        local_dir=os.getcwd() + '/*',
         remote_dir=remote_dir
     )
 
